@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>智慧园区实时能耗与环境监测系统</title>
+  <link rel="stylesheet" href="https://unpkg.com/layui@2.9.21/dist/css/layui.css">
+  <style>
+    :root{--ink:#17263d;--muted:#718096;--blue:#2878ff;--bg:#f4f7fb;--line:#e7edf5}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:#24344d;font-family:"Microsoft YaHei UI","Microsoft YaHei",sans-serif}
+    .shell{min-height:100vh;display:flex}.sidebar{width:232px;background:#14243a;color:#c5d1e0;flex-shrink:0;display:flex;flex-direction:column}
+    .brand{height:74px;padding:17px 20px;color:#fff;font-size:16px;font-weight:700;line-height:20px;border-bottom:1px solid #26364d}
+    .brand small{display:block;color:#8da2bd;font-size:11px;font-weight:400;margin-top:5px}
+    .nav{padding:16px 10px;flex:1}.nav button{display:flex;align-items:center;width:100%;border:0;background:transparent;color:#aebdd0;border-radius:7px;padding:12px 14px;text-align:left;cursor:pointer;font:inherit;margin:3px 0}
+    .nav button:hover,.nav button.active{background:#223a59;color:white}.nav .icon{width:26px;font-size:17px;color:#8bb4ff}
+    .side-foot{font-size:11px;color:#7e91aa;border-top:1px solid #26364d;padding:15px 19px}
+    .main{flex:1;min-width:0}.topbar{height:74px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 30px}
+    .crumb{font-size:18px;font-weight:600;color:#1f3048}.top-right{display:flex;align-items:center;gap:14px;color:#56667d}.user-badge{background:#eef4ff;color:#2464cb;border-radius:20px;padding:7px 12px;font-size:13px}
+    .content{padding:25px 30px 35px;max-width:1600px;margin:auto}.page-title{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:19px}
+    h1{font-size:21px;margin:0 0 6px;color:#1d2c43}.subtitle{font-size:13px;color:var(--muted)}
+    .cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:18px}
+    .card,.panel{background:#fff;border:1px solid var(--line);border-radius:9px;box-shadow:0 3px 14px rgba(20,41,74,.035)}
+    .card{padding:17px 20px;position:relative;overflow:hidden}.card:after{content:"";position:absolute;right:-16px;top:-18px;width:75px;height:75px;background:#edf4ff;border-radius:50%}
+    .card-label{color:#78879c;font-size:13px}.card-value{font-size:28px;font-weight:700;margin-top:10px;color:#20324d}.card-foot{font-size:11px;color:#98a5b6;margin-top:5px}
+    .panel{padding:19px 20px;margin-bottom:17px}.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}
+    .panel-title{font-size:15px;font-weight:650;color:#293a53}.panel-note{font-size:12px;color:#8a97a9}
+    .grid-2{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(290px,1fr);gap:17px}
+    .filters{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:16px}.field{min-width:150px}.field label{display:block;color:#66758a;font-size:12px;margin:0 0 6px}
+    .field input,.field select{height:36px;border:1px solid #dfe6ef;border-radius:4px;padding:0 10px;font-size:13px;min-width:150px;background:#fff}
+    .login-screen{position:fixed;inset:0;background:linear-gradient(130deg,#14243a,#1c3c63 60%,#2765ad);z-index:10;display:flex;align-items:center;justify-content:center;padding:20px}
+    .login-box{background:white;border-radius:12px;width:min(410px,100%);padding:36px 38px;box-shadow:0 20px 70px #0e1e3555}.login-box h2{margin:0;color:#1d304a;font-size:21px}
+    .login-box p{color:#8491a4;font-size:13px;margin:8px 0 26px}.login-box label{display:block;color:#596b83;font-size:13px;margin:15px 0 7px}
+    .login-box input{width:100%;height:42px;border:1px solid #dfe6ef;border-radius:5px;padding:0 12px;font-size:14px}
+    .login-box .layui-btn{width:100%;margin-top:22px;height:42px}.login-hint{margin-top:20px;background:#f5f8fc;border-radius:5px;padding:11px 12px;color:#7d8ba0;font-size:11px;line-height:1.9}
+    .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.layui-table-view{margin:0}.empty{padding:40px;text-align:center;color:#95a1b1}
+    #chart{width:100%;height:260px;display:block}.hidden{display:none!important}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px 8px}
+    .form-grid .field{min-width:0}.form-grid input,.form-grid select{width:100%;min-width:0}.form-actions{grid-column:1/-1;text-align:right;padding-top:8px}
+    .status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;background:#19b987}.muted{color:#8391a4}
+    @media(max-width:950px){.sidebar{width:190px}.content{padding:20px}.cards{grid-template-columns:repeat(2,1fr)}.grid-2{grid-template-columns:1fr}}
+    @media(max-width:650px){.shell{display:block}.sidebar{width:auto}.brand{height:auto}.nav{display:flex;overflow:auto;padding:7px}.nav button{white-space:nowrap;width:auto;padding:9px}.nav .icon{display:none}.side-foot{display:none}.topbar{height:58px;padding:0 15px}.content{padding:16px}.cards{grid-template-columns:1fr 1fr;gap:9px}.card{padding:13px}.card-value{font-size:22px}.page-title{gap:10px}.panel{padding:14px 12px}.user-badge{display:none}}
+  </style>
+</head>
+<body>
+  <section id="loginScreen" class="login-screen">
+    <form id="loginForm" class="login-box">
+      <h2>智慧园区实时监测系统</h2>
+      <p>能源与环境数据可视化管理平台</p>
+      <label for="username">用户名</label>
+      <input id="username" name="username" autocomplete="username" value="admin" required>
+      <label for="password">密码</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" value="admin123" required>
+      <button class="layui-btn layui-btn-normal" type="submit">登 录</button>
+      <div class="login-hint">实验账号：admin / admin123<br>运维账号：operator / operator123<br>只读账号：viewer / viewer123</div>
+    </form>
+  </section>
+  <div id="app" class="shell hidden">
+    <aside class="sidebar">
+      <div class="brand">智慧园区监测平台<small>ENERGY & ENVIRONMENT</small></div>
+      <nav class="nav" id="nav">
+        <button data-view="dashboard" class="active"><span class="icon">▦</span>运行总览</button>
+        <button data-view="devices"><span class="icon">◫</span>设备与指标</button>
+        <button data-view="history"><span class="icon">◷</span>历史数据</button>
+        <button data-view="alerts"><span class="icon">♧</span>告警与规则</button>
+        <button data-view="quality"><span class="icon">☷</span>数据质量与日志</button>
+        <button data-view="users" id="usersNav" class="hidden"><span class="icon">♙</span>用户管理</button>
+      </nav>
+      <div class="side-foot">Layui 2 · 本地业务服务<br>数据存储于本机 SQLite</div>
+    </aside>
+    <main class="main">
+      <header class="topbar"><div id="crumb" class="crumb">运行总览</div><div class="top-right"><span id="roleBadge" class="user-badge"></span><button id="logout" class="layui-btn layui-btn-primary layui-btn-sm">退出登录</button></div></header>
+      <section id="content" class="content"></section>
+    </main>
+  </div>
+  <script src="https://unpkg.com/layui@2.9.21/dist/layui.js"></script>
+  <script>
+    layui.use(["table", "layer", "form"], function () {
+      const table = layui.table, layer = layui.layer, form = layui.form;
+      const roleNames = {ADMIN:"系统管理员",OPERATOR:"运维人员",VIEWER:"只读用户"};
+      const severityNames = {1:"紧急",2:"高",3:"中",4:"低"};
+      const stateNames = {OPEN:"待处理",ACKED:"已确认",RESOLVED:"已恢复"};
+      const names = {dashboard:"运行总览",devices:"设备与指标",history:"历史数据",alerts:"告警与规则",quality:"数据质量与日志",users:"用户管理"};
+      let currentUser = null, currentView = "dashboard", refreshTimer = null, currentChartRows = [], intervalDraft = null;
+      const $ = (selector, root=document) => root.querySelector(selector);
+      const esc = value => String(value == null ? "" : value).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+      const stamp = value => value ? String(value).replace("T"," ").replace("Z","").slice(0,19) : "—";
+      const number = value => Number(value || 0).toLocaleString("zh-CN");
+      async function request(url, options={}) {
+        const response = await fetch(url, {credentials:"same-origin", ...options});
+        let body = {};
+        try { body = await response.json(); } catch (_) { throw new Error("服务器返回了无法识别的数据"); }
+        if (!response.ok) {
+          if (response.status === 401 && currentUser) signOut(false);
+          throw new Error(body.error || "请求失败");
+        }
+        return body;
+      }
+      async function post(url, data) {
+        return request(url, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(data)});
+      }
+      function toast(message, icon=1) { layer.msg(message, {icon, time:2400}); }
+      function fail(error) { toast(error.message || String(error), 2); }
+      function header(title, subtitle, right="") {
+        return `<div class="page-title"><div><h1>${title}</h1><div class="subtitle">${subtitle}</div></div>${right}</div>`;
+      }
+      function panel(title, body, note="") {
+        return `<section class="panel"><div class="panel-head"><div class="panel-title">${title}</div><div class="panel-note">${note}</div></div>${body}</section>`;
+      }
+      function renderTable(id, cols, data, height="full-260") {
+        table.render({elem:"#"+id, data, cols:[cols], page:true, limit:10, limits:[10,20,50,100], height, text:{none:"暂无数据"}});
+      }
+      function metricTableRows(rows) {
+        return rows.map(m => ({code:m.metric_code,name:m.metric_name,unit:m.unit,range:`${m.min_value == null ? "-∞" : m.min_value} ～ ${m.max_value == null ? "+∞" : m.max_value}`,enabled:m.enabled ? "启用":"停用"}));
+      }
+      function drawChart(rows) {
+        const canvas = $("#chart"); if (!canvas) return;
+        const dpr = window.devicePixelRatio || 1, box = canvas.getBoundingClientRect();
+        canvas.width = box.width*dpr; canvas.height = box.height*dpr;
+        const ctx = canvas.getContext("2d"); ctx.scale(dpr,dpr);
+        const w=box.width,h=box.height,p={l:48,r:16,t:18,b:34};
+        ctx.clearRect(0,0,w,h); ctx.font="11px Microsoft YaHei UI"; ctx.strokeStyle="#edf1f6";ctx.fillStyle="#91a0b2";
+        const vals=rows.map(r=>Number(r.metric_value)); if (!vals.length) {ctx.textAlign="center";ctx.fillText("暂无数据，请启动模拟器或注入采样",w/2,h/2);return;}
+        let lo=Math.min(...vals),hi=Math.max(...vals);if(lo===hi){lo-=1;hi+=1;}const pad=(hi-lo)*.12;lo-=pad;hi+=pad;
+        for(let i=0;i<5;i++){const y=p.t+(h-p.t-p.b)*i/4;ctx.beginPath();ctx.moveTo(p.l,y);ctx.lineTo(w-p.r,y);ctx.stroke();ctx.textAlign="right";ctx.fillText((hi-(hi-lo)*i/4).toFixed(1),p.l-8,y+4);}
+        const x=i=>p.l+(w-p.l-p.r)*(vals.length===1?.5:i/(vals.length-1)), y=v=>h-p.b-(v-lo)/(hi-lo)*(h-p.t-p.b);
+        ctx.beginPath();ctx.strokeStyle="#2878ff";ctx.lineWidth=2;vals.forEach((v,i)=>i?ctx.lineTo(x(i),y(v)):ctx.moveTo(x(i),y(v)));ctx.stroke();
+        vals.forEach((v,i)=>{ctx.beginPath();ctx.fillStyle="#fff";ctx.strokeStyle="#2878ff";ctx.arc(x(i),y(v),3.2,0,Math.PI*2);ctx.fill();ctx.stroke();});
+        ctx.fillStyle="#8d9aad";ctx.textAlign="center";[0,Math.floor((vals.length-1)/2),vals.length-1].forEach(i=>{if(i>=0)ctx.fillText(stamp(rows[i].event_time).slice(11,19),x(i),h-9);});
+      }
+      async function loadView(view=currentView) {
+        currentView=view; $("#crumb").textContent=names[view];
+        document.querySelectorAll("#nav button").forEach(button=>button.classList.toggle("active",button.dataset.view===view));
+        if (view==="dashboard") await loadDashboard();
+        if (view==="devices") await loadDevices();
+        if (view==="history") await loadHistory();
+        if (view==="alerts") await loadAlerts();
+        if (view==="quality") await loadQuality();
+        if (view==="users") await loadUsers();
+      }
+      async function loadDashboard() {
+        const params=new URLSearchParams({view:"dashboard"});
+        const selectedDevice=$("#chartDevice")?.value||"",selectedMetric=$("#chartMetric")?.value||"";
+        if(selectedDevice)params.set("device",selectedDevice);if(selectedMetric)params.set("metric",selectedMetric);
+        const d=await request("/api/data?"+params);const s=d.stats;
+        const deviceOpts=d.profiles.map(p=>`<option value="${esc(p.device_code)}" ${p.device_code===d.device?"selected":""}>${esc(p.device_code)}</option>`).join("");
+        const metricOpts=d.metrics.map(m=>`<option value="${esc(m)}" ${m===d.metric?"selected":""}>${esc(m)}</option>`).join("");
+        const intervalValue=intervalDraft??d.simulator.interval;
+        const actions=`<div class="toolbar"><label for="interval">采集间隔（秒）</label><input id="interval" type="number" min="1" max="60" step="1" value="${esc(intervalValue)}" style="width:72px;height:32px;border:1px solid #dfe6ef;border-radius:4px;padding:0 8px"><button id="simToggle" class="layui-btn layui-btn-sm ${d.simulator.running?"layui-btn-danger":"layui-btn-normal"}">${d.simulator.running?"停止采集":"启动模拟器"}</button><button id="applyInterval" class="layui-btn layui-btn-primary layui-btn-sm" ${d.simulator.running?"":"disabled"}>应用间隔</button><button id="sampleOnce" class="layui-btn layui-btn-primary layui-btn-sm">当前指标采样</button></div>`;
+        $("#content").innerHTML=header("运行总览","实时查看园区设备、能耗与环境指标",actions)+
+          `<div class="cards"><div class="card"><div class="card-label">今日接收数据</div><div class="card-value">${number(s.today_samples)}</div><div class="card-foot">今日累计遥测记录</div></div><div class="card"><div class="card-label">在线设备</div><div class="card-value">${s.online_devices}<span style="font-size:15px;color:#8998aa"> / ${s.total_devices}</span></div><div class="card-foot">最近 30 秒内有上报</div></div><div class="card"><div class="card-label">活动告警</div><div class="card-value">${number(s.active_alerts)}</div><div class="card-foot">待处理或已确认</div></div><div class="card"><div class="card-label">异常数据</div><div class="card-value">${number(s.invalid_messages)}</div><div class="card-foot">隔离队列累计记录</div></div></div>`+
+          `<div class="grid-2"><section class="panel"><div class="panel-head"><div class="panel-title">指标趋势</div><div class="toolbar"><select id="chartDevice" class="layui-select">${deviceOpts}</select><select id="chartMetric" class="layui-select">${metricOpts}</select></div></div><canvas id="chart"></canvas><div id="aggregate" class="panel-note"></div></section><section class="panel"><div class="panel-head"><div class="panel-title">采集状态</div><div id="simStatus" class="panel-note">${d.simulator.running?'<span class="status-dot"></span>模拟器运行中':'模拟器已停止'}</div></div><div class="subtitle">模拟范围：${d.profiles.length} 台启用设备</div><div class="subtitle" style="margin-top:9px">${d.simulator.error?`上次错误：${esc(d.simulator.error)}`:"每轮按设备类型生成支持的指标数据"}</div><div style="height:16px"></div><div class="panel-title" style="margin-bottom:10px">最近活动</div><div class="subtitle">最新遥测、设备在线状态和告警可在下方明细中查看。</div></section></div>`+
+          panel("最新遥测数据",'<table id="liveTable"></table>',"自动刷新 · 最近 30 条");
+        currentChartRows=d.chart;drawChart(currentChartRows);
+        const recent=d.chart.slice(-1)[0];
+        $("#aggregate").textContent=recent?`当前值 ${Number(recent.metric_value).toFixed(2)} ${recent.unit} · ${stamp(recent.event_time)}`:"暂无指标数据";
+        renderTable("liveTable",[
+          {field:"event_time",title:"采集时间",width:170,templet:r=>stamp(r.event_time)},
+          {field:"device_code",title:"设备编号",width:130},{field:"device_name",title:"设备名称",minWidth:140},
+          {field:"metric_code",title:"指标",width:110},{field:"metric_value",title:"数值",width:100,templet:r=>`${r.metric_value} ${esc(r.unit)}`},
+          {field:"quality_status",title:"质量",width:90,templet:r=>r.quality_status?"迟到数据":"正常"}
+        ],d.events);
+        $("#chartDevice").onchange=()=>loadView("dashboard");$("#chartMetric").onchange=()=>loadView("dashboard");
+        $("#interval").oninput=()=>{intervalDraft=$("#interval").value;};
+        const selectedInterval=()=>{const interval=Number($("#interval").value);if(!Number.isInteger(interval)||interval<1||interval>60)throw new Error("采集间隔须为 1–60 秒的整数");return interval;};
+        $("#simToggle").onclick=async()=>{try{const action=d.simulator.running?"stop":"start";const interval=action==="start"?selectedInterval():d.simulator.interval;if(action==="start")intervalDraft=interval;await post("/api/simulator",{action,interval});await loadView();}catch(e){fail(e);}};
+        $("#applyInterval").onclick=async()=>{try{const interval=selectedInterval();await post("/api/simulator",{action:"start",interval});intervalDraft=interval;toast(`采集间隔已更新为 ${interval} 秒`);await loadView();}catch(e){fail(e);}};
+        $("#sampleOnce").onclick=async()=>{try{const result=await post("/api/simulator",{action:"cycle"});toast(`已采样 ${result.count} 条数据`);await loadView();}catch(e){fail(e);}};
+      }
+      async function loadDevices() {
+        const d=await request("/api/data?view=devices"), can=currentUser.role_code!=="VIEWER";
+        const actions=can?'<div class="toolbar"><button id="addDevice" class="layui-btn layui-btn-normal layui-btn-sm">新增设备</button><button id="editDevice" class="layui-btn layui-btn-primary layui-btn-sm">编辑选中</button><button id="toggleDevice" class="layui-btn layui-btn-primary layui-btn-sm">启用/停用</button></div>':"";
+        $("#content").innerHTML=header("设备与指标","管理设备档案及系统支持的监测指标",actions)+panel("设备信息",'<table id="devicesTable"></table>')+panel("指标定义",'<table id="metricsTable"></table>');
+        renderTable("devicesTable",[
+          {type:"checkbox",fixed:"left",width:42},
+          {field:"device_code",title:"设备编号",width:130},{field:"device_name",title:"设备名称",minWidth:140},{field:"device_type",title:"类型",width:110},
+          {field:"area_code",title:"所属区域",width:100},{field:"location_desc",title:"安装位置",minWidth:130},{field:"status_label",title:"状态",width:80},
+          {field:"last_seen_at",title:"最后上报",width:170,templet:r=>stamp(r.last_seen_at)}
+        ],d.devices);
+        renderTable("metricsTable",[
+          {field:"code",title:"指标编码",width:130},{field:"name",title:"指标名称",width:130},{field:"unit",title:"单位",width:90},{field:"range",title:"允许范围",minWidth:180},{field:"enabled",title:"状态",width:80}
+        ],metricTableRows(d.metrics));
+        if(!can)return;
+        $("#addDevice").onclick=()=>deviceDialog();
+        $("#editDevice").onclick=()=>{const row=table.checkStatus("devicesTable").data[0];if(!row)return toast("请先在表格中勾选设备",2);deviceDialog(row);};
+        $("#toggleDevice").onclick=async()=>{const row=table.checkStatus("devicesTable").data[0];if(!row)return toast("请先在表格中勾选设备",2);try{await post("/api/device/toggle",{device_code:row.device_code,enabled:!row.enabled});toast("设备状态已更新");loadView();}catch(e){fail(e);}};
+      }
+      function deviceDialog(row={}) {
+        const fields=[["device_code","设备编号"],["device_name","设备名称"],["device_type","设备类型"],["area_code","所属区域"],["location_desc","安装位置"]];
+        const body=`<form id="deviceForm" class="form-grid">${fields.map(([key,label])=>`<div class="field"><label>${label}</label><input name="${key}" value="${esc(row[key]||"")}" ${key==="device_code"&&row.device_code?"readonly":""} required></div>`).join("")}<div class="form-actions"><button type="button" class="layui-btn layui-btn-primary" onclick="layer.closeAll()">取消</button><button class="layui-btn layui-btn-normal">保存设备</button></div></form>`;
+        layer.open({type:1,title:row.device_code?"编辑设备":"新增设备",area:["600px","auto"],content:body,success:function(){
+          $("#deviceForm").onsubmit=async e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.target));try{await post("/api/device",data);layer.closeAll();toast("设备已保存");loadView();}catch(err){fail(err);}};
+        }});
+      }
+      async function loadHistory(filters={}) {
+        const params=new URLSearchParams({view:"history",...filters}),d=await request("/api/data?"+params);
+        const exportButton='<button id="exportHistory" class="layui-btn layui-btn-primary layui-btn-sm">导出 CSV</button>';
+        $("#content").innerHTML=header("历史数据","按设备、指标和时间范围检索遥测记录")+`<section class="panel"><div class="filters"><div class="field"><label>设备编号</label><input id="hDevice" placeholder="全部设备" value="${esc(filters.device||"")}"></div><div class="field"><label>指标编码</label><input id="hMetric" placeholder="全部指标" value="${esc(filters.metric||"")}"></div><div class="field"><label>开始时间</label><input id="hStart" placeholder="YYYY-MM-DD HH:MM:SS" value="${esc(filters.start||"")}"></div><div class="field"><label>结束时间</label><input id="hEnd" placeholder="YYYY-MM-DD HH:MM:SS" value="${esc(filters.end||"")}"></div><button id="searchHistory" class="layui-btn layui-btn-normal layui-btn-sm">查询</button>${exportButton}</div><table id="historyTable"></table></section>`;
+        renderTable("historyTable",[
+          {field:"event_time",title:"采集时间",width:170,templet:r=>stamp(r.event_time)},{field:"device_code",title:"设备编号",width:130},
+          {field:"device_name",title:"设备名称",minWidth:140},{field:"metric_code",title:"指标",width:100},{field:"metric_value",title:"数值",width:100,templet:r=>`${r.metric_value} ${esc(r.unit)}`},
+          {field:"quality_status",title:"质量状态",width:100,templet:r=>r.quality_status?"迟到数据":"正常"}
+        ],d.rows);
+        const collect=()=>({device:$("#hDevice").value,metric:$("#hMetric").value,start:$("#hStart").value,end:$("#hEnd").value});
+        $("#searchHistory").onclick=()=>loadHistory(collect());
+        $("#exportHistory").onclick=()=>{if(!d.rows.length)return toast("当前没有可导出的查询结果",2);const columns=["event_id","device_code","device_name","area_code","metric_code","metric_value","unit","event_time","ingest_time","quality_status"];const quote=v=>`"${String(v==null?"":v).replace(/"/g,'""')}"`;const csv="\ufeff"+[columns.join(","),...d.rows.map(r=>columns.map(c=>quote(r[c])).join(","))].join("\r\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.download="telemetry_history.csv";a.click();URL.revokeObjectURL(a.href);};
+      }
+      async function loadAlerts() {
+        const d=await request("/api/data?view=alerts"),can=currentUser.role_code!=="VIEWER";
+        const actions=can?'<div class="toolbar"><button id="addRule" class="layui-btn layui-btn-normal layui-btn-sm">新增规则</button><button id="editRule" class="layui-btn layui-btn-primary layui-btn-sm">编辑选中</button><button id="toggleRule" class="layui-btn layui-btn-primary layui-btn-sm">启用/停用</button><button id="ackAlert" class="layui-btn layui-btn-warm layui-btn-sm">确认告警</button></div>':"";
+        $("#content").innerHTML=header("告警与规则","跟踪异常事件并维护自动告警条件",actions)+panel("告警记录",'<table id="alertsTable"></table>')+panel("告警规则",'<table id="rulesTable"></table>');
+        renderTable("alertsTable",[
+          {type:"checkbox",fixed:"left",width:42},
+          {field:"rule_name",title:"规则名称",minWidth:150},{field:"device_code",title:"设备",width:120},{field:"metric_code",title:"指标",width:90},
+          {field:"trigger_value",title:"触发值",width:90},{field:"severity",title:"级别",width:80,templet:r=>severityNames[r.severity]||r.severity},
+          {field:"status",title:"状态",width:90,templet:r=>stateNames[r.status]||r.status},{field:"triggered_at",title:"触发时间",width:170,templet:r=>stamp(r.triggered_at)},
+          {field:"acknowledged_name",title:"确认人",width:100,templet:r=>r.acknowledged_name||"—"}
+        ],d.alerts);
+        renderTable("rulesTable",[
+          {type:"checkbox",fixed:"left",width:42},
+          {field:"rule_id",title:"编号",width:60},{field:"rule_name",title:"规则名称",minWidth:150},{field:"device_code",title:"适用设备",width:120,templet:r=>r.device_code||"全部"},
+          {field:"metric_code",title:"指标",width:90},{field:"operator_code",title:"条件",width:90},{field:"threshold_value",title:"阈值",width:90,templet:r=>r.operator_code==="BETWEEN"?`${r.threshold_value} ～ ${r.threshold_upper}`:`${({GT:">",GE:">=",LT:"<",LE:"<="})[r.operator_code]||r.operator_code} ${r.threshold_value}`},
+          {field:"consecutive_count",title:"连续次数",width:90},{field:"severity",title:"级别",width:80,templet:r=>severityNames[r.severity]||r.severity},{field:"enabled",title:"状态",width:75,templet:r=>r.enabled?"启用":"停用"}
+        ],d.rules);
+        if(!can)return;
+        $("#addRule").onclick=()=>ruleDialog(d);
+        $("#editRule").onclick=()=>{const row=table.checkStatus("rulesTable").data[0];if(!row)return toast("请先在表格中勾选规则",2);ruleDialog(d,row);};
+        $("#toggleRule").onclick=async()=>{const row=table.checkStatus("rulesTable").data[0];if(!row)return toast("请先在表格中勾选规则",2);try{await post("/api/rule/toggle",{rule_id:row.rule_id});toast("规则状态已更新");loadView();}catch(e){fail(e);}};
+        $("#ackAlert").onclick=async()=>{const row=table.checkStatus("alertsTable").data[0];if(!row)return toast("请先在告警表格中勾选记录",2);try{await post("/api/alert/ack",{alert_id:row.alert_id});toast("告警已确认");loadView();}catch(e){fail(e);}};
+      }
+      function ruleDialog(data,row={}) {
+        request("/api/data?view=devices").then(result=>{
+          const deviceOptions=`<option value="">全部设备</option>${result.devices.map(d=>`<option value="${esc(d.device_code)}" ${row.device_code===d.device_code?"selected":""}>${esc(d.device_code)}</option>`).join("")}`;
+          const metricOptions=result.metrics.filter(m=>m.enabled).map(m=>`<option value="${esc(m.metric_code)}" ${row.metric_code===m.metric_code?"selected":""}>${esc(m.metric_code)} · ${esc(m.metric_name)}</option>`).join("");
+          const operators=[["GT",">"],["GE",">="],["LT","<"],["LE","<="],["BETWEEN","区间"]].map(([v,n])=>`<option value="${v}" ${row.operator_code===v?"selected":""}>${n}</option>`).join("");
+          const body=`<form id="ruleForm" class="form-grid"><div class="field"><label>规则名称</label><input name="rule_name" value="${esc(row.rule_name||"")}" required></div><div class="field"><label>适用设备</label><select name="device_code">${deviceOptions}</select></div><div class="field"><label>指标编码</label><select name="metric_code" required>${metricOptions}</select></div><div class="field"><label>比较方式</label><select name="operator_code">${operators}</select></div><div class="field"><label>阈值 / 区间下限</label><input name="threshold_value" type="number" step="any" value="${row.threshold_value??100}" required></div><div class="field"><label>区间上限（区间规则必填）</label><input name="threshold_upper" type="number" step="any" value="${row.threshold_upper??""}"></div><div class="field"><label>连续触发次数</label><input name="consecutive_count" type="number" min="1" max="100" value="${row.consecutive_count??3}" required></div><div class="field"><label>告警级别</label><select name="severity">${[1,2,3,4].map(n=>`<option value="${n}" ${Number(row.severity||2)===n?"selected":""}>${severityNames[n]}</option>`).join("")}</select></div><div class="field"><label>冷却秒数</label><input name="cooldown_seconds" type="number" min="0" max="86400" value="${row.cooldown_seconds??300}" required></div><div class="form-actions"><button type="button" class="layui-btn layui-btn-primary" onclick="layer.closeAll()">取消</button><button class="layui-btn layui-btn-normal">保存规则</button></div></form>`;
+          layer.open({type:1,title:row.rule_id?"编辑告警规则":"新增告警规则",area:["680px","auto"],content:body,success:function(){form.render();$("#ruleForm").onsubmit=async e=>{e.preventDefault();const raw=Object.fromEntries(new FormData(e.target));const payload={...raw,rule_id:row.rule_id||null,threshold_value:Number(raw.threshold_value),threshold_upper:raw.threshold_upper===""?null:Number(raw.threshold_upper),consecutive_count:Number(raw.consecutive_count),severity:Number(raw.severity),cooldown_seconds:Number(raw.cooldown_seconds)};try{await post("/api/rule",payload);layer.closeAll();toast("规则已保存");loadView();}catch(err){fail(err);}};}});
+        }).catch(fail);
+      }
+      async function loadQuality() {
+        const d=await request("/api/data?view=quality"),can=currentUser.role_code!=="VIEWER";
+        const actions=`<div class="toolbar"><button id="importJsonl" class="layui-btn layui-btn-normal layui-btn-sm" ${can?"":"disabled"}>导入 JSONL</button><button id="refreshQuality" class="layui-btn layui-btn-primary layui-btn-sm">刷新</button>${currentUser.role_code==="ADMIN"?'<button id="resetData" class="layui-btn layui-btn-danger layui-btn-sm">清空实验数据</button>':""}</div>`;
+        $("#content").innerHTML=header("数据质量与日志",`本地数据库：${esc(d.database)}`,actions)+panel("异常数据隔离队列（DLQ）",'<table id="dlqTable"></table>',"最近 200 条")+panel("操作审计日志",'<table id="auditTable"></table>',"最近 200 条");
+        renderTable("dlqTable",[{field:"dlq_id",title:"编号",width:70},{field:"created_at",title:"时间",width:170,templet:r=>stamp(r.created_at)},{field:"reason",title:"错误原因",minWidth:240},{field:"raw_payload",title:"原始消息",minWidth:260}],d.dlq);
+        renderTable("auditTable",[{field:"audit_id",title:"编号",width:70},{field:"created_at",title:"时间",width:170,templet:r=>stamp(r.created_at)},{field:"username",title:"用户",width:110},{field:"action",title:"操作",width:180},{field:"object_type",title:"对象类型",width:110},{field:"object_id",title:"对象编号",width:130},{field:"detail",title:"详情",minWidth:200}],d.audit);
+        $("#refreshQuality").onclick=()=>loadView();
+        if(can)$("#importJsonl").onclick=()=>{const input=document.createElement("input");input.type="file";input.accept=".jsonl,.txt";input.onchange=async()=>{const file=input.files[0];if(!file)return;try{const result=await post("/api/import",{content:await file.text()});const r=result.results;toast(`导入完成：成功 ${r.ok} 条，重复 ${r.duplicate} 条，异常 ${r.invalid} 条`);loadView();}catch(e){fail(e);}};input.click();};
+        if(currentUser.role_code==="ADMIN")$("#resetData").onclick=()=>layer.confirm("将清空遥测数据、聚合、告警和异常数据，但保留设备、规则、用户和审计日志。确定继续？",async index=>{layer.close(index);try{await post("/api/reset",{});toast("实验数据已清空");loadView();}catch(e){fail(e);}});
+      }
+      async function loadUsers() {
+        const d=await request("/api/data?view=users");
+        $("#content").innerHTML=header("用户管理","管理系统账号、角色及登录状态",'<button id="addUser" class="layui-btn layui-btn-normal layui-btn-sm">新增用户</button><button id="toggleUser" class="layui-btn layui-btn-primary layui-btn-sm">启用/停用</button>')+panel("系统用户",'<table id="usersTable"></table>');
+        renderTable("usersTable",[{type:"checkbox",fixed:"left",width:42},{field:"username",title:"用户名",width:150},{field:"display_name",title:"显示名称",minWidth:150},{field:"role_code",title:"角色",width:130,templet:r=>roleNames[r.role_code]||r.role_code},{field:"enabled",title:"状态",width:90,templet:r=>r.enabled?"启用":"停用"},{field:"created_at",title:"创建时间",width:180,templet:r=>stamp(r.created_at)}],d.users);
+        $("#addUser").onclick=()=>{const body='<form id="userForm" class="form-grid"><div class="field"><label>用户名</label><input name="username" required></div><div class="field"><label>初始密码（至少 8 位）</label><input name="password" type="password" required></div><div class="field"><label>显示名称</label><input name="display_name" required></div><div class="field"><label>角色</label><select name="role_code"><option value="OPERATOR">运维人员</option><option value="VIEWER">只读用户</option><option value="ADMIN">系统管理员</option></select></div><div class="form-actions"><button type="button" class="layui-btn layui-btn-primary" onclick="layer.closeAll()">取消</button><button class="layui-btn layui-btn-normal">新增用户</button></div></form>';layer.open({type:1,title:"新增用户",area:["600px","auto"],content:body,success:()=>{$("#userForm").onsubmit=async e=>{e.preventDefault();try{await post("/api/user",Object.fromEntries(new FormData(e.target)));layer.closeAll();toast("用户已创建");loadView();}catch(err){fail(err);}};}});};
+        $("#toggleUser").onclick=async()=>{const row=table.checkStatus("usersTable").data[0];if(!row)return toast("请先在表格中勾选用户",2);if(row.username===currentUser.username)return toast("不能停用当前登录用户",2);try{await post("/api/user/toggle",{username:row.username,enabled:!row.enabled});toast("用户状态已更新");loadView();}catch(e){fail(e);}};
+      }
+      async function signOut(callApi=true) {
+        if(callApi)try{await post("/api/logout",{});}catch(e){fail(e);}
+        currentUser=null;clearInterval(refreshTimer);$("#app").classList.add("hidden");$("#loginScreen").classList.remove("hidden");
+      }
+      function signedIn(user) {
+        currentUser=user;$("#loginScreen").classList.add("hidden");$("#app").classList.remove("hidden");
+        $("#roleBadge").textContent=`${user.display_name} · ${roleNames[user.role_code]||user.role_code}`;
+        $("#usersNav").classList.toggle("hidden",user.role_code!=="ADMIN");
+        loadView().catch(fail);clearInterval(refreshTimer);refreshTimer=setInterval(()=>loadView().catch(fail),5000);
+      }
+      $("#loginForm").onsubmit=async event=>{event.preventDefault();try{const result=await post("/api/login",{username:$("#username").value,password:$("#password").value});signedIn(result.user);}catch(e){fail(e);}};
+      $("#logout").onclick=()=>signOut();
+      $("#nav").onclick=event=>{const button=event.target.closest("button[data-view]");if(button)loadView(button.dataset.view).catch(fail);};
+      window.addEventListener("resize",()=>{if(currentView==="dashboard")drawChart(currentChartRows);});
+      request("/api/me").then(result=>result.user?signedIn(result.user):$("#loginScreen").classList.remove("hidden")).catch(fail);
+    });
+  </script>
+</body>
+</html>
