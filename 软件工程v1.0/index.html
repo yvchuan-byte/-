@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>智慧园区监测系统</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#f3f6fa;color:#26364b;font:14px "Microsoft YaHei UI","Microsoft YaHei",sans-serif}
+    .hidden{display:none!important}.login{min-height:100vh;display:grid;place-items:center;background:linear-gradient(130deg,#14243a,#1c3c63 60%,#2765ad);padding:20px}
+    .card{width:min(420px,100%);background:#fff;border-radius:10px;padding:30px;box-shadow:0 20px 70px #0e1e3555}
+    h1{font-size:21px;margin:0;color:#1d304a}p{color:#8491a4}.field{display:block;margin:14px 0}.field span{display:block;margin-bottom:6px;color:#596b83}
+    input{width:100%;height:38px;border:1px solid #d5deea;border-radius:4px;padding:0 10px;font:inherit}
+    button{border:1px solid #cbd5e1;border-radius:4px;background:white;color:#334155;padding:8px 13px;font:inherit;cursor:pointer}
+    button:hover{background:#f1f5f9}button.primary{background:#2563eb;border-color:#2563eb;color:white}button.primary:hover{background:#1d4ed8}
+    .accounts{font-size:12px;line-height:1.9;background:#f5f8fc;padding:10px;margin:16px 0;color:#64748b}
+    .layout{display:flex;min-height:100vh}.side{width:225px;background:#14243a;color:#c5d1e0;flex-shrink:0}.brand{padding:20px;border-bottom:1px solid #26364d;color:white;font-weight:bold}
+    .brand small{display:block;color:#8da2bd;font-weight:normal;margin-top:5px}.side nav{padding:12px}.side nav button{width:100%;text-align:left;background:transparent;border:0;color:#aebdd0;margin:3px 0}
+    .side nav button.active,.side nav button:hover{background:#223a59;color:white}.main{min-width:0;flex:1}.topbar{height:68px;background:white;border-bottom:1px solid #e7edf5;display:flex;align-items:center;justify-content:space-between;padding:0 24px}
+    .content{padding:24px;max-width:1450px;margin:auto}.panel{background:#fff;border:1px solid #e7edf5;border-radius:8px;padding:18px;margin-top:16px}
+    .panelhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;white-space:nowrap}
+    th,td{padding:11px 12px;border-bottom:1px solid #e8edf4;text-align:left}th{background:#f7f9fc;color:#52637a;font-weight:600}tbody tr:hover{background:#f8fafc}
+    dialog{border:0;border-radius:8px;padding:22px;width:min(560px,calc(100% - 24px));box-shadow:0 15px 50px #0e1e3544}dialog::backdrop{background:#14243a88}
+    .formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.formgrid label{font-size:12px;color:#66758a}.formgrid input{display:block;margin-top:6px}
+    .actions{grid-column:1/-1;text-align:right}.status{color:#64748b;font-size:12px}.error{color:#b91c1c}
+    @media(max-width:700px){.layout{display:block}.side{width:100%}.side nav{display:flex}.side nav button{white-space:nowrap}.content{padding:14px}.formgrid{grid-template-columns:1fr}.actions{grid-column:auto}}
+  </style>
+</head>
+<body>
+  <section id="login" class="login">
+    <form id="loginForm" class="card">
+      <h1>智慧园区监测系统</h1><p>园区能耗与环境监测平台</p>
+      <label class="field"><span>用户名</span><input id="username" value="admin" autocomplete="username" required></label>
+      <label class="field"><span>密码</span><input id="password" type="password" value="admin123" autocomplete="current-password" required></label>
+      <button class="primary" type="submit" style="width:100%">登 录</button>
+      <div class="accounts">管理员：admin / admin123<br>运维人员：operator / operator123<br>只读用户：viewer / viewer123</div>
+      <div id="loginError" class="error" role="alert"></div>
+    </form>
+  </section>
+  <div id="app" class="layout hidden">
+    <aside class="side"><div class="brand">智慧园区监测平台<small>能耗与环境监测平台</small></div>
+      <nav id="menu"><button class="active" data-page="devices">设备档案</button><button data-page="metrics">指标定义</button></nav>
+    </aside>
+    <main class="main">
+      <header class="topbar"><strong id="pageTitle">设备档案</strong><span><span id="roleBadge"></span> <button id="logout">退出登录</button></span></header>
+      <section id="content" class="content"></section>
+    </main>
+  </div>
+  <dialog id="deviceDialog">
+    <form id="deviceForm" class="formgrid">
+      <h3 id="dialogTitle" style="grid-column:1/-1;margin:0 0 4px">新增设备</h3>
+      <label>设备编号<input name="device_code" required></label><label>设备名称<input name="device_name" required></label>
+      <label>设备类型<input name="device_type"></label><label>所属区域<input name="area_code" required></label>
+      <label style="grid-column:1/-1">安装位置<input name="location_desc"></label>
+      <div class="actions"><button type="button" id="cancelDevice">取消</button> <button class="primary">保存</button></div>
+    </form>
+  </dialog>
+  <script>
+    const $=(selector,root=document)=>root.querySelector(selector);
+    let user=null,currentPage="devices",selectedDevice=null;
+    const escape=value=>String(value==null?"":value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+    async function request(url,options={}){
+      const response=await fetch(url,{credentials:"same-origin",...options});
+      let body={};try{body=await response.json()}catch(_){throw new Error("服务器响应格式无效")}
+      if(!response.ok)throw new Error(body.error||"请求失败");return body;
+    }
+    const post=(url,data)=>request(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+    function showError(error){alert(error.message||String(error))}
+    async function loadPage(page=currentPage){
+      currentPage=page;$("#pageTitle").textContent=page==="devices"?"设备档案":"指标定义";
+      document.querySelectorAll("#menu button").forEach(button=>button.classList.toggle("active",button.dataset.page===page));
+      const data=await request("/api/data?view=devices");page==="devices"?renderDevices(data.devices):renderMetrics(data.metrics);
+    }
+    function table(headers,rows){return `<div class="tablewrap"><table><thead><tr>${headers.map(x=>`<th>${x}</th>`).join("")}</tr></thead><tbody>${rows.join("")||`<tr><td colspan="${headers.length}">暂无数据</td></tr>`}</tbody></table></div>`}
+    function renderDevices(devices){
+      const editable=user.role_code!=="VIEWER";
+      const tools=editable?'<div><button id="addDevice" class="primary">新增设备</button> <button id="editDevice">编辑选中</button> <button id="toggleDevice">启用/停用</button></div>':"";
+      $("#content").innerHTML=`<h2>设备档案</h2><p>维护设备编号、类型、区域与安装位置。</p><section class="panel"><div class="panelhead"><strong>设备列表</strong>${tools}</div>${table(["选择","设备编号","设备名称","设备类型","所属区域","安装位置","状态"],devices.map(d=>`<tr><td><input type="radio" name="device" value="${escape(d.device_code)}"></td><td>${escape(d.device_code)}</td><td>${escape(d.device_name)}</td><td>${escape(d.device_type)}</td><td>${escape(d.area_code)}</td><td>${escape(d.location_desc)}</td><td>${d.enabled?"启用":"停用"}</td></tr>`))}</section>`;
+      if(!editable)return;
+      $("#addDevice").onclick=()=>openDeviceDialog();
+      $("#editDevice").onclick=()=>{const d=chosen(devices);if(d)openDeviceDialog(d)};
+      $("#toggleDevice").onclick=async()=>{const d=chosen(devices);if(!d)return;try{await post("/api/device/toggle",{device_code:d.device_code,enabled:!d.enabled});await loadPage()}catch(error){showError(error)}};
+    }
+    function chosen(devices){const input=$('input[name="device"]:checked');if(!input){alert("请先选择一台设备");return null}return devices.find(d=>d.device_code===input.value)}
+    function openDeviceDialog(device=null){
+      selectedDevice=device;$("#dialogTitle").textContent=device?"编辑设备":"新增设备";
+      const form=$("#deviceForm");for(const key of ["device_code","device_name","device_type","area_code","location_desc"])form.elements[key].value=device?.[key]||"";
+      form.elements.device_code.readOnly=Boolean(device);$("#deviceDialog").showModal();
+    }
+    function renderMetrics(metrics){
+      $("#content").innerHTML=`<h2>指标定义</h2><p>本迭代提供基础指标目录，遥测数据接入与指标计算属于后续迭代。</p><section class="panel"><div class="panelhead"><strong>系统指标</strong></div>${table(["指标编码","指标名称","单位","最小值","最大值","状态"],metrics.map(m=>`<tr><td>${escape(m.metric_code)}</td><td>${escape(m.metric_name)}</td><td>${escape(m.unit)}</td><td>${m.min_value??"不限"}</td><td>${m.max_value??"不限"}</td><td>${m.enabled?"启用":"停用"}</td></tr>`))}</section>`;
+    }
+    function enter(data){user=data;$("#login").classList.add("hidden");$("#app").classList.remove("hidden");$("#roleBadge").textContent=`${user.display_name} · ${user.role_name}`;loadPage().catch(showError)}
+    $("#loginForm").onsubmit=async event=>{event.preventDefault();$("#loginError").textContent="";try{enter((await post("/api/login",{username:$("#username").value,password:$("#password").value})).user)}catch(error){$("#loginError").textContent=error.message}};
+    $("#logout").onclick=async()=>{try{await post("/api/logout",{})}catch(error){showError(error)}user=null;$("#app").classList.add("hidden");$("#login").classList.remove("hidden")};
+    $("#menu").onclick=event=>{const button=event.target.closest("button[data-page]");if(button)loadPage(button.dataset.page).catch(showError)};
+    $("#cancelDevice").onclick=()=>$("#deviceDialog").close();
+    $("#deviceForm").onsubmit=async event=>{event.preventDefault();const data=Object.fromEntries(new FormData(event.currentTarget));data.is_edit=Boolean(selectedDevice);try{await post("/api/device",data);$("#deviceDialog").close();await loadPage()}catch(error){showError(error)}};
+    request("/api/me").then(result=>{if(result.user)enter(result.user)}).catch(showError);
+  </script>
+</body>
+</html>
