@@ -55,28 +55,6 @@
 - `启动系统.bat`：运行脚本；`build_exe.bat`：PyInstaller 打包脚本。
 - `tests/test_v4.py`：核心功能测试；`README.txt`：启动、测试和功能说明。
 
-### v4.0f：模块化版本与构建目录
-
-- 根目录文件：`main.py`、`park_energy_monitor.py`、`build_exe.bat`、`ParkEnergyMonitor.spec`、`ParkEnergyMonitor_Fixed.spec`、`ParkEnergyMonitor_Fixed.exe`、`energy_monitor.db`。
-- `energy_monitor_app/__init__.py`：应用包初始化。
-- `energy_monitor_app/app/`：`main.py`（应用入口）、`monitor_app.py`（应用协调）。
-- `energy_monitor_app/config/constants.py`：常量配置。
-- `energy_monitor_app/core/`：`app_paths.py`（路径）、`security.py`（安全相关）、`time_utils.py`（时间处理）。
-- `energy_monitor_app/db/`：`schema.py`（数据库结构）、`store.py`（存储操作）。
-- `energy_monitor_app/rules/`：`base_rule.py`、`comparison_rules.py`、`rule_factory.py`（告警规则）。
-- `energy_monitor_app/services/`：`device_service.py`、`monitor_backend.py`、`query_service.py`、`simulator.py`、`telemetry_service.py`、`user_service.py`（设备、监控、查询、模拟、遥测和用户服务）。
-- `energy_monitor_app/ui/`：`alert_view.py`、`dashboard_view.py`、`device_view.py`、`dialogs.py`、`history_view.py`、`quality_view.py`、`simulator_view.py`、`user_view.py`、`widgets.py`（各功能界面和通用控件）。
-- `tests/`：`_support.py`、`test_alerts.py`、`test_rules.py`、`test_simulator.py`、`test_telemetry.py`。
-- `build/`：PyInstaller 生成的 `ParkEnergyMonitor` 和 `ParkEnergyMonitor_Fixed` 构建目录，含 `.toc` 清单、`.pyz`/`.pkg` 包、可执行文件、警告/交叉引用报告及 `localpycs` 运行库文件。
-
-### v4.0ff：模块化运行版本
-
-模块划分与 v4.0f 相同，包含 `energy_monitor_app/` 下的应用、配置、核心、数据库、规则、服务和 UI 模块，以及 `tests/` 下的 `_support.py`、`test_alerts.py`、`test_rules.py`、`test_simulator.py`、`test_telemetry.py`。本目录另外包含：
-
-- `main.py`、`park_energy_monitor.py`：启动及兼容入口。
-- `build_exe.bat`：打包脚本；`ParkEnergyMonitor_Fixed.exe`：Windows 可执行程序。
-- `energy_monitor.db`：SQLite 数据库；`requirements.txt`：依赖。
-- `启动系统.bat`：Windows 启动脚本；`README.txt`：本版本说明。
 
 ### 桌面 Web UI 版本
 
