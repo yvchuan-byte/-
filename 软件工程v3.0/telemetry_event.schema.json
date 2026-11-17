@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "园区遥测事件",
+  "description": "Sprint 1 约定的数据交换格式；数据接入与入库在 Sprint 2 实现。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "deviceCode",
+    "metricCode",
+    "value",
+    "unit",
+    "eventTime"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "事件唯一标识"
+    },
+    "deviceCode": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "description": "设备编号"
+    },
+    "metricCode": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 48,
+      "description": "指标编码"
+    },
+    "value": {
+      "type": "number",
+      "description": "指标数值"
+    },
+    "unit": {
+      "type": "string",
+      "minLength": 1,
+      "description": "数值单位"
+    },
+    "eventTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "设备侧事件时间，ISO 8601 格式"
+    }
+  },
+  "examples": [
+    {
+      "eventId": "c1fd63c2-b498-4f7c-8e8f-734a101b0f84",
+      "deviceCode": "POWER-A-01",
+      "metricCode": "power",
+      "value": 82.4,
+      "unit": "kW",
+      "eventTime": "2026-11-16T08:00:00Z"
+    }
+  ]
+}
