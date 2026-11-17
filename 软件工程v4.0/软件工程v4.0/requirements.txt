@@ -1,0 +1,2 @@
+# 运行系统和测试仅使用 Python 标准库（包括 Tkinter）。
+# 构建独立 EXE 时需另外安装 PyInstaller：py -3.11 -m pip install pyinstaller
